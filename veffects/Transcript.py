@@ -20,7 +20,6 @@ class Transcript:
         self.seq_translated = ''
         self.seq_changed = ''
         self.seq_changed_translated = ''
-        self.fluffy_bunnies = True
 
     def add_exon(self, exon):
 
@@ -80,7 +79,7 @@ class Transcript:
             variant_bool = \
             [exon.start <= variant.pos <= exon.end for variant in variants]
 
-            exon.variants = itertools.compress(variants, variant_bool)
+            exon.variants = list(itertools.compress(variants, variant_bool))
 
     def assemble_changed_seq(self):
 

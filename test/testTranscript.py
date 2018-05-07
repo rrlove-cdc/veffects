@@ -6,16 +6,29 @@ Created on Thu May  3 13:46:33 2018
 @author: beccalove
 """
 
-import indel
-import indel.variants
 import unittest
+import veffects
 
 class TranscriptTestCase(unittest.TestCase):
     
     def setUp(self):
         
         test_seq = "ATGCTTCATCAGCAGCAGCCCGGGGCCTAG"
-        self.transcript = indel.variants.Transcript("2L", test_seq)
+        self.transcript = veffects.Transcript("2L", test_seq)
+        
+        exon1 = veffects.ExonSequence("2L", "foo", 1, "+", 5, 18)#14
+        exon2 = veffects.ExonSequence("2L", "foo", 2, "+", 50, 55)#6
+        exon3 = veffects.ExonSequence("2L", "foo", 3, "+", 70, 74)#5
+        exon4 = veffects.ExonSequence("2L", "foo", 4, "+", 103, 107)#5
+        
+        self.exons = [exon1, exon2, exon3, exon4]
+        
+        variant1 = veffects.VariantRecord("2L", 15, "A", "AA")
+        variant2 = veffects.VariantRecord("2L", 16, "GCA", "G")
+        variant3 = veffects.VariantRecord("2L", 52, "A", "AAAAA")
+        variant4 = veffects.VariantRecord("2L", 70, "CGG", "C")
+        
+        self.variants = [variant1, variant2, variant3, variant4]
         
     def test_translate_seq(self):
         
@@ -38,36 +51,26 @@ class TranscriptTestCase(unittest.TestCase):
     def test_populate_exon_seq_length_check(self):
         ##pass a set of exons whose collective length is less than the length
         ##of the sequence, and make sure an AssertionError is raised
-
-        exon1 = indel.variants.ExonSequence("2L", "foo", 1, "+", 5, 21)
-        exon2 = indel.variants.ExonSequence("2L", "foo", 2, "+", 77, 90)
         
-        self.transcript.add_exon(exon1)
-        self.transcript.add_exon(exon2)
-        
-        #print(sum([exon.length for exon in self.transcript.exons]) ==\
-        #      len(self.transcript.seq))
-        #print(len(self.transcript.seq))
+        self.transcript.add_exon(self.exons[0])
+        self.transcript.add_exon(self.exons[1])
         
         self.assertRaises(AssertionError, self.transcript.populate_exon_seq)
         
     def test_populate_exon_seq_correct_seqs(self):
         
-        exon1 = indel.variants.ExonSequence("2L", "foo", 1, "+", 5, 21)#17
-        exon2 = indel.variants.ExonSequence("2L", "foo", 2, "+", 50, 55)#6
-        exon3 = indel.variants.ExonSequence("2L", "foo", 3, "+", 70, 74)#5
-        exon4 = indel.variants.ExonSequence("2L", "foo", 4, "+", 103, 107)#5
+        #ATGCTTCATCAGCAGCAGCCCGGGGCCTAG
         
-        for exon in [exon1, exon2, exon3, exon4]:
+        for exon in self.exons:
             self.transcript.add_exon(exon)
         
         self.transcript.populate_exon_seq()
         
         self.assertEqual(self.transcript.exons[0].sequence,
-                         "ATGCGTCATCAGCAGCA")
+                         "ATGCTTCATCAGCA")
         
         self.assertEqual(self.transcript.exons[1].sequence,
-                         "GCAGTC")
+                         "GCAGCC")
         
         self.assertEqual(self.transcript.exons[2].sequence,
                          "CGGGG")
@@ -75,15 +78,40 @@ class TranscriptTestCase(unittest.TestCase):
         self.assertEqual(self.transcript.exons[3].sequence,
                          "CCTAG")
         
-    def test_a_populate_exon_has_exons(self):
+    def test_populate_exon_has_exons(self):
         
         self.assertRaises(AssertionError, self.transcript.populate_exon_seq)
-    
-    
-    '''def test_assertion_error(self):
+                
+    def test_parse_variants_list(self):
         
-        def toy_function(num1, num2):
-            
-            self.assertEqual(num1, num2)
+        for exon in self.exons:
+            self.transcript.add_exon(exon)
+
+        self.transcript.parse_variants_list(self.variants)
         
-        self.assertRaises(AssertionError, toy_function, 1, 3)'''
+        exon1_variants = [self.variants[0], self.variants[1]]
+        exon2_variants = [self.variants[2]]
+        exon3_variants = [self.variants[3]]
+        
+        self.assertEqual(self.transcript.exons[0].variants, exon1_variants)
+        self.assertEqual(self.transcript.exons[1].variants, exon2_variants)
+        self.assertEqual(self.transcript.exons[2].variants, exon3_variants)
+        self.assertEqual(self.transcript.exons[3].variants, [])
+    
+    def test_assemble_changed_seq(self):
+        
+        for exon in self.exons:
+            self.transcript.add_exon(exon)
+                    
+        self.transcript.exons[0].changed_sequence = "ATGCTTCATCAAGCACA"
+        self.transcript.exons[1].changed_sequence = "GCAAAAAGCC"
+        self.transcript.exons[2].changed_sequence = "CGG"
+        self.transcript.exons[3].changed_sequence = "CCTAG"
+        
+        self.transcript.assemble_changed_seq()
+        
+        test_seq = "ATGCTTCATCAAGCACAGCAAAAAGCCCGGCCTAG"
+        
+        self.assertEqual(self.transcript.seq_changed, test_seq)
+        
+        
