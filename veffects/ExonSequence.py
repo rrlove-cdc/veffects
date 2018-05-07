@@ -18,8 +18,14 @@ class ExonSequence:
         self.end = end
         self.length = abs(self.end - self.start) + 1
         self.variants = []
+        self.sequence = ''
+        self.changed_sequence = ''
         
     def add_sequence(self, sequence):
+        
+        if not len(sequence) == self.length:
+            
+           raise ValueError("Sequence and exon differ in length")
         
         self.sequence = sequence
         
