@@ -14,6 +14,7 @@ class ExonSequenceTestCase(unittest.TestCase):
     def setUp(self):
         
         self.exon = veffects.ExonSequence("2L", "foo", 3, "+", 109, 134)
+        self.test_seq = "CGATATGAATATGACCAGATATGAGT"
         
     def test_length(self):
         
@@ -21,11 +22,9 @@ class ExonSequenceTestCase(unittest.TestCase):
         
     def test_add_sequence(self):
         
-        test_seq = "CGATATGAATATGACCAGATATGAGT"
+        self.exon.add_sequence(self.test_seq)
         
-        self.exon.add_sequence(test_seq)
-        
-        self.assertEqual(self.exon.sequence, test_seq)
+        self.assertEqual(self.exon.sequence, self.test_seq)
         
     def test_sequence_is_right_length(self):
         
@@ -35,10 +34,44 @@ class ExonSequenceTestCase(unittest.TestCase):
     
     def test_change(self):
         
-        pass
-    
-    def test_change_edge_case(self):
+        self.exon.add_sequence(self.test_seq)
         
-        pass
-
+        variant1 = veffects.VariantRecord("2L", 110, "GA", "G")
+        variant2 = veffects.VariantRecord("2L", 118, "T", "C")
+        variant3 = veffects.VariantRecord("2L", 125, "A", "AAAAAAA")
+        variant4 = veffects.VariantRecord("2L", 131, "GAG", "G")
+        
+        variants = [variant1, variant2, variant3, variant4]
+        
+        test_changed_seq = "CGTATGAACATGACCAAAAAAAGATATGT"
+        
+        self.exon.change(variants)
+        
+        self.assertEqual(self.exon.changed_sequence, test_changed_seq)
+        
+    def test_change_ref_alleles_mismatch(self):
+        
+        self.exon.add_sequence(self.test_seq)
+        
+        variant1 = veffects.VariantRecord("2L", 131, "GGG", "G")
+        
+        self.assertRaises(ValueError, self.exon.add_sequence, [variant1])
+    
+    def test_change_allele_out_of_bounds(self):
+        
+        self.exon.add_sequence(self.test_seq)
+        
+        variant1 = veffects.VariantRecord("2L", 4, "G","GGGG")
+        
+        self.assertRaises(ValueError, self.exon.add_sequence, [variant1])
        
+    def test_change_chroms_mismatch(self):
+        
+        self.exon.add_sequence(self.test_seq)
+        
+        variant1 = veffects.VariantRecord("2L", 118, "T", "C")
+        variant2 = veffects.VariantRecord("3L", 118, "T", "C")
+        
+        variants = [variant1, variant2]
+        
+        self.assertRaises(ValueError, self.exon.add_sequence, variants)
