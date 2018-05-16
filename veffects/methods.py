@@ -49,7 +49,7 @@ def make_transcript(feature_seq_json):
 
 def make_GET_request(gene,
                     get_server = "https://www.vectorbase.org/rest",
-                    feature_types = ["transcript","exon","cds"]):
+                    feature_types = ["exon","cds"]):
     
     headers = {'Content-type' : 'application/json', \
                'Accept' : 'application/json'}
