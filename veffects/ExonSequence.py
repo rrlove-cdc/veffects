@@ -49,13 +49,17 @@ class ExonSequence:
                 raise ValueError("Variant is out of bounds of exon", variant)
             
             index = variant.pos - self.start
+                
+            if self.strand == -1:
+                
+                index = self.end - variant.pos
             
             if len(variant.alt) >= len(variant.ref):
                 ##variant is insertion or SNP
                 
                 if not variant.ref == self.sequence[index]:
-                    raise ValueError("Reference alleles don't match at" +\
-                                     variant.pos)
+                    raise ValueError("Reference alleles don't match at " +\
+                                     str(variant.pos))
                 
                 mutable_sequence_list[index] = variant.alt
                 
@@ -64,8 +68,8 @@ class ExonSequence:
                 test_string = self.sequence[(index):(index + len(variant.ref))]
                 
                 if not variant.ref == test_string:
-                    raise ValueError("Reference alleles don't match at" +\
-                                     variant.pos)
+                    raise ValueError("Reference alleles don't match at " +\
+                                     str(variant.pos))
                 
                 mutable_sequence_list[index] = variant.alt
                 

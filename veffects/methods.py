@@ -9,6 +9,7 @@ Created on Thu May  3 13:37:17 2018
 from collections import namedtuple
 from .Transcript import Transcript
 from .ExonSequence import ExonSequence
+import re
 import requests
 
 VariantRecord = namedtuple(
@@ -17,11 +18,20 @@ VariantRecord = namedtuple(
 class RequestReturnError(Exception):
     pass
 
+def validate_transcript_name(name):
+    
+    if not re.search('-R[A-Z]', name):
+        
+        raise ValueError("You may be using a gene name.\
+                         Please use a transcript name instead.")
+
 def make_POST_request(gene, 
                       post_server = "https://www.vectorbase.org/rest", 
                       post_ext = "/sequence/id/",
                      feature = "cds"):
-
+    
+    validate_transcript_name(gene)
+    
     headers = {'Content-type' : 'application/json',
                'Accept' : 'application/json'}
     
@@ -50,6 +60,8 @@ def make_transcript(feature_seq_json):
 def make_GET_request(gene,
                     get_server = "https://www.vectorbase.org/rest",
                     feature_types = ["exon","cds"]):
+    
+    validate_transcript_name(gene)
     
     headers = {'Content-type' : 'application/json', \
                'Accept' : 'application/json'}
