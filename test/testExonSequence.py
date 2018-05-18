@@ -43,9 +43,11 @@ class ExonSequenceTestCase(unittest.TestCase):
         
         variants = [variant1, variant2, variant3, variant4]
         
+        self.exon.variants = variants
+        
         test_changed_seq = "CGTATGAACATGACCAAAAAAAGATATGT"
         
-        self.exon.change(variants)
+        self.exon.change()
         
         self.assertEqual(self.exon.changed_sequence, test_changed_seq)
         

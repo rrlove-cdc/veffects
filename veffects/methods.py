@@ -132,7 +132,7 @@ def run_workflow(gene_name, variants):
     
     for exon in transcript.exons:
     
-        exon.change(exon.variants)
+        exon.change()
         
     transcript.assemble_changed_seq()
     

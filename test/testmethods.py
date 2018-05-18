@@ -179,7 +179,7 @@ class TestValidateTranscriptName(unittest.TestCase):
                           veffects.validate_transcript_name,
                           "AGAP004687")
     
-class TestWorkflow(unittest.TestCase):
+class TestWorkflowReverseStrand(unittest.TestCase):
         
     def setUp(self):
         
@@ -261,17 +261,66 @@ class TestWorkflow(unittest.TestCase):
         
         self.transcript = veffects.run_workflow(self.gene, self.variants_five)
         
-        output_five = "MVLNGIDSGDMQLICEACHLMLALEEMVRS*DVWKQGVLDSFLL" +\
+        output_five = "MVLNGIDSGDMQLICEACHLMLALEEMVRSDVWKQGVLDSFLL" +\
         "ELPHHFLNQRDVEG*"
         
         self.assertEqual(self.transcript.seq_changed_translated, output_five)
     
     
-    def test_positive_strand(self):
+    def test_order_does_not_matter(self):
         
-        raise ValueError("test not written")
+        v1 = vr("2L", 298, "GTACACA", "G")
+        v2 = vr("2L", 294, "A", "T")
         
+        transcript_1 = veffects.run_workflow(self.gene, [v1, v2])
+        transcript_2 = veffects.run_workflow(self.gene, [v2, v1])
         
+        self.assertEqual(transcript_1.seq_changed_translated,
+                         transcript_2.seq_changed_translated)
+    
+class TestWorkflowForwardStrand(unittest.TestCase):
+        
+    def setUp(self):
+        
+        self.gene = "AGAP013717-RA"
+        
+        self.variants_one = [vr("3R", 758708, "C", "T"),
+                             vr("3R", 758718, "C", "T"),
+                             vr("3R", 758720, "A", "G"),
+                             vr("3R", 758727, "G", "A"),
+                             vr("3R", 758734, "GTG", "G"),
+                             vr("3R", 758743, "AA", "A"),
+                             vr("3R", 758777, "G", "A"),
+                             vr("3R", 758788, "G", "T"),
+                             vr("3R", 758807, "T", "C")]
+        
+        self.variants_two = [vr("3R", 758681, "G", "C"),
+                             vr("3R", 758697, "G", "A"),
+                             vr("3R", 758711, "A", "T"),
+                             vr("3R", 758742, "G", "C"),
+                             vr("3R", 758750, "G", "T"),
+                             vr("3R", 758755, "C", "G"),
+                             vr("3R", 758777, "G", "A"),
+                             vr("3R", 758793, "C", "G"),
+                             vr("3R", 758805, "GATACTGATCAAAATCTT", "G"),
+                             vr("3R", 758832, "C", "CAA")]
+        
+    def test_variant_set_one(self):
+        
+        self.transcript = veffects.run_workflow(self.gene, self.variants_one)
+        
+        output_one = "MGNAPNPKQYIKYSRNTAEAGEKCIPVQRGMFQLGT*NLFYLTLIKIFT" +\
+        "ILNNIVNKCL*"
+        
+        self.assertEqual(self.transcript.seq_changed_translated, output_one)
+
+    def test_variant_set_two(self):
+        
+        self.transcript = veffects.run_workflow(self.gene, self.variants_two)
+        
+        output_two = "MANAPNPKQYTMYSKNTAEVRVKKFIAVQRGMFQLGTGKLFYLYHSQNNIVNKCL*"
+        
+        self.assertEqual(self.transcript.seq_changed_translated, output_two)
         
 if __name__ == '__main__':
 	unittest.main()

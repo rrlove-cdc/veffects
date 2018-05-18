@@ -29,7 +29,7 @@ class ExonSequence:
         
         self.sequence = sequence
         
-    def change(self, variants):
+    def change(self):
         
         ##what to do about overlapping variants?
         ##if we are assuming these are haplotypes, there shouldn't be any
@@ -39,7 +39,7 @@ class ExonSequence:
         
         mutable_sequence_list = list(self.sequence)
         
-        for variant in variants:
+        for variant in self.variants:
             
             if not variant.chrom == self.chrom:
                 raise ValueError("Variant chrom and exon chrom don't match", 
@@ -60,6 +60,16 @@ class ExonSequence:
                 if not variant.ref == self.sequence[index]:
                     raise ValueError("Reference alleles don't match at " +\
                                      str(variant.pos))
+                    
+                if mutable_sequence_list[index] == '':
+                    
+                    print("Warning: position at {pos} is part of a \
+                          spanning deletion. You may be analyzing data \
+                          from multiple haplotypes or have an undetected \
+                          error. Skipping this position.".format(pos =\
+                          variant.pos))
+                    
+                    continue
                 
                 mutable_sequence_list[index] = variant.alt
                 
@@ -70,10 +80,23 @@ class ExonSequence:
                 if not variant.ref == test_string:
                     raise ValueError("Reference alleles don't match at " +\
                                      str(variant.pos))
+                    
+                to_be_deleted =\
+                mutable_sequence_list[(index):(index + len(variant.ref))]
+                    
+                if '' in to_be_deleted:
+                    
+                    print("Warning: position at {pos} is part of a \
+                          spanning deletion. You may be analyzing data \
+                          from multiple haplotypes or have an undetected \
+                          error. Skipping this position.".format(pos =\
+                          variant.pos))
+                    
+                    continue
                 
                 mutable_sequence_list[index] = variant.alt
                 
-                for index in range((index+1),(index + len(variant.ref))):
-                    mutable_sequence_list[index] = ''
+                for new_index in range((index+1),(index + len(variant.ref))):
+                    mutable_sequence_list[new_index] = ''
                 
         self.changed_sequence = ''.join(mutable_sequence_list)
