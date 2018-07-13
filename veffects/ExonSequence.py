@@ -6,6 +6,8 @@ Created on Thu May  3 13:37:02 2018
 @author: beccalove
 """
 
+from Bio import Seq
+
 class ExonSequence:
     
     def __init__(self, chrom, transcript, exon_number, strand, start, end):
@@ -27,6 +29,10 @@ class ExonSequence:
             
            raise ValueError("Sequence and exon differ in length")
         
+        if self.strand == "-1":
+            
+            sequence = str(Seq.Seq(sequence).reverse_complement())
+        
         self.sequence = sequence
         
     def change(self):
@@ -44,13 +50,13 @@ class ExonSequence:
             if not variant.chrom == self.chrom:
                 raise ValueError("Variant chrom and exon chrom don't match", 
                                  variant)
-            
+                
             if not self.start <= variant.pos <= self.end:
                 raise ValueError("Variant is out of bounds of exon", variant)
-            
+
             index = variant.pos - self.start
                 
-            if self.strand == -1:
+            if self.strand == "-1":
                 
                 index = self.end - variant.pos
             
@@ -60,7 +66,7 @@ class ExonSequence:
                 if not variant.ref == self.sequence[index]:
                     raise ValueError("Reference alleles don't match at " +\
                                      str(variant.pos))
-                    
+
                 if mutable_sequence_list[index] == '':
                     
                     print("Warning: position at {pos} is part of a \
