@@ -165,7 +165,7 @@ class TestMakeExons(unittest.TestCase):
         
         self.assertEqual(self.exons[0].exon_number, 1)
         
-        self.assertEqual(self.exons[0].strand, -1)
+        self.assertEqual(self.exons[0].strand, "-1")
         
         self.assertEqual(self.exons[0].start, 819113)
         
@@ -181,15 +181,51 @@ class TestValidateTranscriptName(unittest.TestCase):
     
 class TestWorkflowReverseStrand(unittest.TestCase):
         
+    ##what about masked sequence?
+    
     def setUp(self):
         
         self.gene = "AGAP004687-RA"
         
-        self.variants_one = [vr("2L", 819190, "TGGAACA", "T"),
-                             vr("2L", 819219, "G", "T"),
-                             vr("2L", 819235, "G", "T")]
+        self.variants_one = [vr("2L", 819183, "TTGTTCC", "T"),
+                             vr("2L", 819219, "C", "A"),
+                             vr("2L", 819235, "C", "A")]
         
-        self.variants_two = [vr("2L", 819244, "C", "CC")]
+        self.variants_two = [vr("2L", 819243, "A", "AG")]
+        
+        self.variants_three = [vr("2L", 819174, "A", "AA"),
+                               vr("2L", 819138, "AG", "A")]
+        
+        self.variants_four = [vr("2L", 819290, "G", "T"),
+                              vr("2L", 819233, "C", "G"),
+                              vr("2L", 819172, "C", "A"),
+                              vr("2L", 819195, "T", "C"),
+                              vr("2L", 819165, "A", "T"),
+                              vr("2L", 819201, "T", "G"),
+                              vr("2L", 819251, "C", "A"),
+                              vr("2L", 819134, "G", "A"),
+                              vr("2L", 819235, "C", "G")]
+        
+        self.variants_five = [vr("2L", 819216, "TTCCGTGTCATGC", "T"),
+                             vr("2L", 819185, "G", "GT"),
+                             vr("2L", 819182, "CT", "C"),
+                             vr("2L", 819160, "T", "G"),
+                             vr("2L", 819294, "T", "A"),
+                             vr("2L", 819225, "A", "G"),
+                             vr("2L", 819167, "C", "T"),
+                             vr("2L", 819203, "CT", "C"),
+                             vr("2L", 819196, "CGA", "C"),
+                             vr("2L", 819154, "T", "G"),
+                             vr("2L", 819279, "T", "G"),
+                             vr("2L", 819290, "G", "A"),
+                             vr("2L", 819145, "C", "G")]
+ 
+
+        '''self.variants_one = [vr("2L", 819224, "TGGAACA", "T"),
+                             vr("2L", 819179, "G", "T"),
+                             vr("2L", 819195, "G", "T")]
+        
+        self.variants_two = [vr("2L", 819243, "C", "CC")]
         
         self.variants_three = [vr("2L", 819175, "T", "TT"),
                                vr("2L", 819140, "TC", "T")]
@@ -216,7 +252,7 @@ class TestWorkflowReverseStrand(unittest.TestCase):
                              vr("2L", 819154, "A", "C"),
                              vr("2L", 819279, "A", "C"),
                              vr("2L", 819290, "C", "T"),
-                             vr("2L", 819145, "G", "C")]
+                             vr("2L", 819145, "G", "C")]'''
         
     def test_variant_set_one(self):
         

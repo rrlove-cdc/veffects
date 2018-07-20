@@ -15,7 +15,7 @@ class ExonSequence:
         self.chrom = chrom
         self.transcript = transcript
         self.exon_number = exon_number
-        self.strand = strand
+        self.strand = str(strand)
         self.start = start
         self.end = end
         self.length = abs(self.end - self.start) + 1
@@ -29,11 +29,19 @@ class ExonSequence:
             
            raise ValueError("Sequence and exon differ in length")
         
+        self.sequence = sequence
+        
+        '''If this is on the reverse strand, take the reverse complement,
+        because variants are reported in relation to the forward strand.
+        However, we still want to retain the original sequence as well.'''
+        
+        self.seq_adjusted = sequence
+            
         if self.strand == "-1":
             
-            sequence = str(Seq.Seq(sequence).reverse_complement())
-        
-        self.sequence = sequence
+            reverse_complement = str(Seq.Seq(sequence).reverse_complement())
+            
+            self.seq_adjusted = reverse_complement
         
     def change(self):
         
@@ -43,8 +51,8 @@ class ExonSequence:
         ##it seems like a case with overlapping variants would break the
         ##assumptions behind this code
         
-        mutable_sequence_list = list(self.sequence)
-        
+        mutable_sequence_list = list(self.seq_adjusted)
+                
         for variant in self.variants:
             
             if not variant.chrom == self.chrom:
@@ -56,14 +64,14 @@ class ExonSequence:
 
             index = variant.pos - self.start
                 
-            if self.strand == "-1":
+#            if self.strand == "-1":
                 
-                index = self.end - variant.pos
+#                index = self.end - variant.pos
             
             if len(variant.alt) >= len(variant.ref):
                 ##variant is insertion or SNP
                 
-                if not variant.ref == self.sequence[index]:
+                if not variant.ref == self.seq_adjusted[index]:
                     raise ValueError("Reference alleles don't match at " +\
                                      str(variant.pos))
 
@@ -81,7 +89,8 @@ class ExonSequence:
                 
             elif len(variant.ref) > len(variant.alt):##variant is a deletion
                 
-                test_string = self.sequence[(index):(index + len(variant.ref))]
+                test_string =\
+                self.seq_adjusted[(index):(index + len(variant.ref))]
                 
                 if not variant.ref == test_string:
                     raise ValueError("Reference alleles don't match at " +\
@@ -104,5 +113,15 @@ class ExonSequence:
                 
                 for new_index in range((index+1),(index + len(variant.ref))):
                     mutable_sequence_list[new_index] = ''
-                
-        self.changed_sequence = ''.join(mutable_sequence_list)
+        
+        changed_sequence = ''.join(mutable_sequence_list)
+        
+        ##if this is on the reverse strand, we need to change back
+        ##to the original orientation
+        
+        if self.strand == "-1":
+            
+            changed_sequence =\
+            str(Seq.Seq(changed_sequence).reverse_complement())
+        
+        self.changed_sequence = changed_sequence        
