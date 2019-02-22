@@ -77,6 +77,23 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         variants = [variant1, variant2]
         
         self.assertRaises(ValueError, self.exon.add_sequence, variants)
+        
+    def test_multi_base_ref_alelle(self):
+        
+        self.exon.add_sequence(self.test_seq)
+        
+        variant1 = veffects.VariantRecord("2L", 118, "TA", "AA")
+        variant2 = veffects.VariantRecord("2L", 127, "ATA", "CTA")
+        
+        variants = [variant1, variant2]
+        
+        self.exon.variants = variants
+        
+        self.exon.change()
+        
+        test_changed_seq = "CGATATGAAAATGACCAGCTATGAGT"
+        
+        self.assertEqual(self.exon.changed_sequence, test_changed_seq)
 
 '''        
 class ExonSequenceReverseTestCase(unittest.TestCase):

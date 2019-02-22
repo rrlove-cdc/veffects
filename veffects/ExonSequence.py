@@ -22,7 +22,7 @@ class ExonSequence:
         self.variants = []
         self.sequence = ''
         self.changed_sequence = ''
-        
+               
     def add_sequence(self, sequence):
         
         if not len(sequence) == self.length:
@@ -55,6 +55,7 @@ class ExonSequence:
                 
         for variant in self.variants:
             
+            ##check that chromosome matches and position is reasonable
             if not variant.chrom == self.chrom:
                 raise ValueError("Variant chrom and exon chrom don't match", 
                                  variant)
@@ -63,56 +64,46 @@ class ExonSequence:
                 raise ValueError("Variant is out of bounds of exon", variant)
 
             index = variant.pos - self.start
-                
-#            if self.strand == "-1":
-                
-#                index = self.end - variant.pos
             
-            if len(variant.alt) >= len(variant.ref):
-                ##variant is insertion or SNP
-                
-                if not variant.ref == self.seq_adjusted[index]:
+            len_ref = len(variant.ref)
+            
+            len_alt = len(variant.alt)
+            
+            if not variant.ref == self.seq_adjusted[(index):(index + len_ref)]:
                     raise ValueError("Reference alleles don't match at " +\
                                      str(variant.pos))
-
-                if mutable_sequence_list[index] == '':
                     
-                    print("Warning: position at {pos} is part of a \
+            ##first, check for spanning deletions
+            
+            affected = mutable_sequence_list[(index):(index + len_ref)]
+            
+            if '' in affected:
+                
+                print("Warning: position at {pos} is part of a \
                           spanning deletion. You may be analyzing data \
                           from multiple haplotypes or have an undetected \
                           error. Skipping this position.".format(pos =\
                           variant.pos))
                     
-                    continue
+                continue
+            
+            if len_ref == len_alt:
                 
+                for alt_index in range(len_alt):
+                    
+                    new_index = alt_index + index
+                    
+                    mutable_sequence_list[new_index] = variant.alt[alt_index]
+                    
+            else:
+            
                 mutable_sequence_list[index] = variant.alt
-                
-            elif len(variant.ref) > len(variant.alt):##variant is a deletion
-                
-                test_string =\
-                self.seq_adjusted[(index):(index + len(variant.ref))]
-                
-                if not variant.ref == test_string:
-                    raise ValueError("Reference alleles don't match at " +\
-                                     str(variant.pos))
+            
+                if len_ref > 1:
                     
-                to_be_deleted =\
-                mutable_sequence_list[(index):(index + len(variant.ref))]
-                    
-                if '' in to_be_deleted:
-                    
-                    print("Warning: position at {pos} is part of a \
-                          spanning deletion. You may be analyzing data \
-                          from multiple haplotypes or have an undetected \
-                          error. Skipping this position.".format(pos =\
-                          variant.pos))
-                    
-                    continue
-                
-                mutable_sequence_list[index] = variant.alt
-                
-                for new_index in range((index+1),(index + len(variant.ref))):
-                    mutable_sequence_list[new_index] = ''
+                    for new_index in range((index + 1), (index + len_ref)):
+                        
+                        mutable_sequence_list[new_index] = ''
         
         changed_sequence = ''.join(mutable_sequence_list)
         

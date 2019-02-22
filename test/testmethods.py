@@ -40,12 +40,13 @@ class TestPOSTRequest(unittest.TestCase):
 
     def test_bad_gene_name(self):
 
-        self.assertRaises(veffects.methods.RequestReturnError, 
+        self.assertRaises(veffects.RequestReturnError, 
                           veffects.make_POST_request, "foo-RZ")
         
     def test_gene_name_not_transcript_name(self):
         
-        self.assertRaises(ValueError, veffects.make_POST_request,
+        self.assertRaises(veffects.BadNameError, 
+                          veffects.make_POST_request,
                           "AGAP004687")
 
     def test_bad_server(self):
@@ -79,12 +80,12 @@ class TestGETRequest(unittest.TestCase):
         
     def test_gene_name_not_transcript_name(self):
         
-        self.assertRaises(ValueError, veffects.make_GET_request, 
+        self.assertRaises(veffects.BadNameError, veffects.make_GET_request, 
                           "AGAP004687")
         
     def test_bad_name(self):
         
-        self.assertRaises(veffects.methods.RequestReturnError,
+        self.assertRaises(veffects.RequestReturnError,
                           veffects.make_GET_request, "foo-RZ")
         
     def test_bad_server(self):
@@ -175,9 +176,14 @@ class TestValidateTranscriptName(unittest.TestCase):
     
     def test_basic(self):
         
-        self.assertRaises(ValueError,
+        self.assertRaises(veffects.BadNameError,
                           veffects.validate_transcript_name,
                           "AGAP004687")
+        
+class TestHasNoncodingExons(unittest.TestCase):
+    
+    def test_basic(self):
+        self.assertEqual(2,5)
     
 class TestWorkflowReverseStrand(unittest.TestCase):
         
@@ -219,41 +225,7 @@ class TestWorkflowReverseStrand(unittest.TestCase):
                              vr("2L", 819279, "T", "G"),
                              vr("2L", 819290, "G", "A"),
                              vr("2L", 819145, "C", "G")]
- 
-
-        '''self.variants_one = [vr("2L", 819224, "TGGAACA", "T"),
-                             vr("2L", 819179, "G", "T"),
-                             vr("2L", 819195, "G", "T")]
-        
-        self.variants_two = [vr("2L", 819243, "C", "CC")]
-        
-        self.variants_three = [vr("2L", 819175, "T", "TT"),
-                               vr("2L", 819140, "TC", "T")]
-        
-        self.variants_four = [vr("2L", 819290, "C", "A"),
-                              vr("2L", 819233, "G", "C"),
-                              vr("2L", 819172, "G", "T"),
-                              vr("2L", 819195, "A", "G"),
-                              vr("2L", 819165, "T", "A"),
-                              vr("2L", 819201, "A", "C"),
-                              vr("2L", 819251, "G", "T"),
-                              vr("2L", 819134, "C", "T"),
-                              vr("2L", 819235, "G", "C")]
-        
-        self.variants_five = [vr("2L", 819229, "GGCATGACACGGA", "G"),
-                             vr("2L", 819186, "A", "AA"),
-                             vr("2L", 819184, "AA", "A"),
-                             vr("2L", 819160, "A", "C"),
-                             vr("2L", 819294, "A", "T"),
-                             vr("2L", 819225, "T", "C"),
-                             vr("2L", 819167, "G", "A"),
-                             vr("2L", 819205, "CA", "C"),
-                             vr("2L", 819199, "TTC", "T"),
-                             vr("2L", 819154, "A", "C"),
-                             vr("2L", 819279, "A", "C"),
-                             vr("2L", 819290, "C", "T"),
-                             vr("2L", 819145, "G", "C")]'''
-        
+         
     def test_variant_set_one(self):
         
         self.transcript = veffects.run_workflow(self.gene,
