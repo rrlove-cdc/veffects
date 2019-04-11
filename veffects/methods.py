@@ -88,25 +88,19 @@ def make_GET_request(gene,
         
     return feature_coords.json()
 
-def make_exons(feature_coords_json, gene):
+def make_exons(gff3, gene):
+    
+    chunk = gff3[(gff3["Parent"] == gene) | (gff3["ID"] == gene) |\
+                 (gff3["Name"] == gene)]
     
     cds_list = []
-    #exon_list = []
     exon_object_list = []
     
-    for item in feature_coords_json:
+    for item in chunk:
     
-        if item["feature_type"] == "cds":
+        if item["type"] == "CDS":
 
-            if item["Parent"] == gene:
-
-                cds_list.append(item)
-
-        '''elif item["feature_type"] == "exon":
-
-            if item["Parent"] == gene:
-
-                exon_list.append(item)'''
+            cds_list.append(item)
                 
     if cds_list[0]["strand"] == -1:
         
@@ -115,25 +109,10 @@ def make_exons(feature_coords_json, gene):
     else:
         
         cds_list.sort(key = lambda x: x["start"])
-            
-    '''if not len(cds_list) == len(exon_list):
-        
-        raise NumExonsAndCDSDifferError("Must be same # of exons and CDSes")'''
-        
-    '''for i in range(len(exon_list)):
-    
-        exon = ExonSequence(chrom = exon_list[i]["seq_region_name"],
-                        transcript = gene,
-                       exon_number = exon_list[i]["rank"],
-                       strand = exon_list[i]["strand"],
-                       start = cds_list[i]["start"],
-                       end = cds_list[i]["end"])
-        
-        exon_object_list.append(exon)'''
         
     for index, feature in enumerate(cds_list):
     
-        exon = ExonSequence(chrom = feature["seq_region_name"],
+        exon = ExonSequence(chrom = feature["seqid"],
                         transcript = gene,
                        exon_number = index + 1,
                        strand = feature["strand"],
@@ -157,7 +136,6 @@ def check_exon_order(exon_list):
         if not x.end <= y.start:
             
             raise ValueError("exons out of order")
- 
 
 def run_workflow(gene_name, variants):
     

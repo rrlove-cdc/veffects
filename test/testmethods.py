@@ -6,6 +6,7 @@ Created on Wed May 16 15:48:51 2018
 @author: beccalove
 """
 
+import allel
 import unittest
 import requests
 import veffects
@@ -125,37 +126,36 @@ class TestMakeTranscript(unittest.TestCase):
 class TestMakeExons(unittest.TestCase):
     
     def setUp(self):
+                
+        feature_table_dtype = [
+                ('seqid','O'),
+                ('source','O'),
+                ('type','O'),
+                ('start','<i8'),
+                ('end','<i8'),
+                ('score','<f8'),
+                ('strand','O'),
+                ('phase','<i8'),
+                ('Parent','O'),
+                ('Name','O'),
+                ('ID','O'),
+                ]
         
-        self.feature_coords_json = [{'Parent': 'AGAP004687-RA',
-                          'assembly_name': 'AgamP4',
-                          'constitutive': '1',
-                          'end': 819301,
-                          'ensembl_end_phase': '0',
-                          'ensembl_phase': '0',
-                          'exon_id': 'AGAP004687-RA-E1',
-                          'feature_type': 'exon',
-                          'id': 'AGAP004687-RA-E1',
-                          'rank': 1,
-                          'seq_region_name': '2L',
-                          'source': 'VectorBase',
-                          'start': 819113,
-                          'strand': -1,
-                          'version': 1},
-                            {'Parent': 'AGAP004687-RA',
-                             'assembly_name': 'AgamP4',
-                             'end': 819301,
-                             'feature_type': 'cds',
-                             'id': 'AGAP004687-PA',
-                             'phase': 0,
-                             'protein_id': 'AGAP004687-PA',
-                             'seq_region_name': '2L',
-                             'source': 'VectorBase',
-                             'start': 819113,
-                             'strand': -1}]
+        feature_table_data = [
+                ('2L', 'DB', 'mRNA', 819113, 819301, -1, '-', -1,
+                 'AGAP004687', '.', 'AGAP004687-RA'),
+                ('2L', 'DB', 'exon', 819113, 819301, -1, '-', -1,
+                 'AGAP004687-RA', '.', 'E013854A'),
+                ('2L', 'DB', 'CDS', 819113, 819301, -1, '-', 0,
+                 'AGAP004687-RA', '.', '.')
+                ]
+            
+        self.feature_table = \
+            allel.FeatureTable(feature_table_data, dtype=feature_table_dtype)
         
     def test_basic(self):
         
-        self.exons = veffects.make_exons(self.feature_coords_json,
+        self.exons = veffects.make_exons(self.feature_table,
                                          "AGAP004687-RA")
         
         self.assertEqual(len(self.exons), 1)
@@ -166,7 +166,7 @@ class TestMakeExons(unittest.TestCase):
         
         self.assertEqual(self.exons[0].exon_number, 1)
         
-        self.assertEqual(self.exons[0].strand, "-1")
+        self.assertEqual(self.exons[0].strand, "-")
         
         self.assertEqual(self.exons[0].start, 819113)
         
