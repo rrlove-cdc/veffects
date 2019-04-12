@@ -13,7 +13,7 @@ import re
 import requests
 
 VariantRecord = namedtuple(
-    'VariantRecord',['chrom','pos','ref','alt'])
+    'VariantRecord',['chrom', 'pos', 'ref', 'alt', 'end'])
 
 class BadNameError(Exception):
     pass
@@ -137,14 +137,16 @@ def check_exon_order(exon_list):
             
             raise ValueError("exons out of order")
 
-def run_workflow(gene_name, variants):
+def run_workflow(gene_name, gff3, variants):
     
     transcript = make_transcript(make_POST_request(gene = gene_name))
     
-    for exon in make_exons(make_GET_request(gene = gene_name), gene_name):
+    for exon in make_exons(gff3, gene_name):
         transcript.add_exon(exon)
         
     transcript.populate_exon_seq()
+    
+    transcript.check_for_overlapping_variants(variants)
     
     transcript.parse_variants_list(variants)
     

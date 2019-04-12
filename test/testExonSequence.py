@@ -36,10 +36,10 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         
         self.exon.add_sequence(self.test_seq)
         
-        variant1 = veffects.VariantRecord("2L", 110, "GA", "G")
-        variant2 = veffects.VariantRecord("2L", 118, "T", "C")
-        variant3 = veffects.VariantRecord("2L", 125, "A", "AAAAAAA")
-        variant4 = veffects.VariantRecord("2L", 131, "GAG", "G")
+        variant1 = veffects.VariantRecord("2L", 110, "GA", "G", 111)
+        variant2 = veffects.VariantRecord("2L", 118, "T", "C", 118)
+        variant3 = veffects.VariantRecord("2L", 125, "A", "AAAAAAA", 125)
+        variant4 = veffects.VariantRecord("2L", 131, "GAG", "G", 133)
         
         variants = [variant1, variant2, variant3, variant4]
         
@@ -55,7 +55,7 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         
         self.exon.add_sequence(self.test_seq)
         
-        variant1 = veffects.VariantRecord("2L", 131, "GGG", "G")
+        variant1 = veffects.VariantRecord("2L", 131, "GGG", "G", 133)
         
         self.assertRaises(ValueError, self.exon.add_sequence, [variant1])
     
@@ -63,7 +63,7 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         
         self.exon.add_sequence(self.test_seq)
         
-        variant1 = veffects.VariantRecord("2L", 4, "G","GGGG")
+        variant1 = veffects.VariantRecord("2L", 4, "G","GGGG", 4)
         
         self.assertRaises(ValueError, self.exon.add_sequence, [variant1])
        
@@ -71,8 +71,8 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         
         self.exon.add_sequence(self.test_seq)
         
-        variant1 = veffects.VariantRecord("2L", 118, "T", "C")
-        variant2 = veffects.VariantRecord("3L", 118, "T", "C")
+        variant1 = veffects.VariantRecord("2L", 118, "T", "C", 118)
+        variant2 = veffects.VariantRecord("3L", 118, "T", "C", 118)
         
         variants = [variant1, variant2]
         
@@ -82,8 +82,8 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         
         self.exon.add_sequence(self.test_seq)
         
-        variant1 = veffects.VariantRecord("2L", 118, "TA", "AA")
-        variant2 = veffects.VariantRecord("2L", 127, "ATA", "CTA")
+        variant1 = veffects.VariantRecord("2L", 118, "TA", "AA", 118)
+        variant2 = veffects.VariantRecord("2L", 127, "ATA", "CTA", 127)
         
         variants = [variant1, variant2]
         

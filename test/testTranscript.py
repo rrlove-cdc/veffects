@@ -23,10 +23,10 @@ class TranscriptTestCase(unittest.TestCase):
         
         self.exons = [exon1, exon2, exon3, exon4]
         
-        variant1 = veffects.VariantRecord("2L", 15, "A", "AA")
-        variant2 = veffects.VariantRecord("2L", 16, "GCA", "G")
-        variant3 = veffects.VariantRecord("2L", 52, "A", "AAAAA")
-        variant4 = veffects.VariantRecord("2L", 70, "CGG", "C")
+        variant1 = veffects.VariantRecord("2L", 15, "A", "AA", 15)
+        variant2 = veffects.VariantRecord("2L", 16, "GCA", "G", 18)
+        variant3 = veffects.VariantRecord("2L", 52, "A", "AAAAA", 52)
+        variant4 = veffects.VariantRecord("2L", 70, "CGG", "C", 72)
         
         self.variants = [variant1, variant2, variant3, variant4]
         
@@ -56,7 +56,7 @@ class TranscriptTestCase(unittest.TestCase):
         self.transcript.add_exon(self.exons[1])
         
         self.assertRaises(AssertionError, self.transcript.populate_exon_seq)
-        
+                
     def test_populate_exon_seq_correct_seqs(self):
         
         #ATGCTTCATCAGCAGCAGCCCGGGGCCTAG
@@ -81,6 +81,20 @@ class TranscriptTestCase(unittest.TestCase):
     def test_populate_exon_has_exons(self):
         
         self.assertRaises(AssertionError, self.transcript.populate_exon_seq)
+        
+    def test_catches_overlapping_variants(self):
+        ##pass a set of variants that overlaps an exon boundary
+        ##and make sure a VariantOverlapsExonBoundaryError is raised
+        
+        for exon in self.exons:
+            
+            self.transcript.add_exon(exon)
+
+        variant5 = veffects.VariantRecord("2L", 4, "CAT", "C", 6)
+        
+        self.assertRaises(veffects.VariantCrossesExonBoundaryError,
+                          self.transcript.check_for_overlapping_variants,
+                          [variant5])
                 
     def test_parse_variants_list(self):
         

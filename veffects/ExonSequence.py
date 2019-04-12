@@ -37,7 +37,7 @@ class ExonSequence:
         
         self.seq_adjusted = sequence
             
-        if self.strand == "-1":
+        if self.strand == "-":
             
             reverse_complement = str(Seq.Seq(sequence).reverse_complement())
             
@@ -59,15 +59,17 @@ class ExonSequence:
             if not variant.chrom == self.chrom:
                 raise ValueError("Variant chrom and exon chrom don't match", 
                                  variant)
-                
-            if not self.start <= variant.pos <= self.end:
-                raise ValueError("Variant is out of bounds of exon", variant)
 
             index = variant.pos - self.start
             
             len_ref = len(variant.ref)
             
             len_alt = len(variant.alt)
+            
+            #if variant.pos < self.start and variant.pos + len_
+            
+            if not self.start <= variant.pos <= self.end:
+                raise ValueError("Variant is out of bounds of exon", variant)
             
             if not variant.ref == self.seq_adjusted[(index):(index + len_ref)]:
                     raise ValueError("Reference alleles don't match at " +\
@@ -110,7 +112,7 @@ class ExonSequence:
         ##if this is on the reverse strand, we need to change back
         ##to the original orientation
         
-        if self.strand == "-1":
+        if self.strand == "-":
             
             changed_sequence =\
             str(Seq.Seq(changed_sequence).reverse_complement())

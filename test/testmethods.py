@@ -179,11 +179,6 @@ class TestValidateTranscriptName(unittest.TestCase):
         self.assertRaises(veffects.BadNameError,
                           veffects.validate_transcript_name,
                           "AGAP004687")
-        
-class TestHasNoncodingExons(unittest.TestCase):
-    
-    def test_basic(self):
-        self.assertEqual(2,5)
     
 class TestWorkflowReverseStrand(unittest.TestCase):
         
@@ -193,42 +188,68 @@ class TestWorkflowReverseStrand(unittest.TestCase):
         
         self.gene = "AGAP004687-RA"
         
-        self.variants_one = [vr("2L", 819183, "TTGTTCC", "T"),
-                             vr("2L", 819219, "C", "A"),
-                             vr("2L", 819235, "C", "A")]
+        self.variants_one = [vr("2L", 819183, "TTGTTCC", "T", 819189),
+                             vr("2L", 819219, "C", "A", 819219),
+                             vr("2L", 819235, "C", "A", 819235)]
         
-        self.variants_two = [vr("2L", 819243, "A", "AG")]
+        self.variants_two = [vr("2L", 819243, "A", "AG", 819243)]
         
-        self.variants_three = [vr("2L", 819174, "A", "AA"),
-                               vr("2L", 819138, "AG", "A")]
+        self.variants_three = [vr("2L", 819174, "A", "AA", 819174),
+                               vr("2L", 819138, "AG", "A", 819139)]
         
-        self.variants_four = [vr("2L", 819290, "G", "T"),
-                              vr("2L", 819233, "C", "G"),
-                              vr("2L", 819172, "C", "A"),
-                              vr("2L", 819195, "T", "C"),
-                              vr("2L", 819165, "A", "T"),
-                              vr("2L", 819201, "T", "G"),
-                              vr("2L", 819251, "C", "A"),
-                              vr("2L", 819134, "G", "A"),
-                              vr("2L", 819235, "C", "G")]
+        self.variants_four = [vr("2L", 819290, "G", "T", 819290),
+                              vr("2L", 819233, "C", "G", 819233),
+                              vr("2L", 819172, "C", "A", 819172),
+                              vr("2L", 819195, "T", "C", 819195),
+                              vr("2L", 819165, "A", "T", 819165),
+                              vr("2L", 819201, "T", "G", 819201),
+                              vr("2L", 819251, "C", "A", 819251),
+                              vr("2L", 819134, "G", "A", 819134),
+                              vr("2L", 819235, "C", "G", 819235)]
         
-        self.variants_five = [vr("2L", 819216, "TTCCGTGTCATGC", "T"),
-                             vr("2L", 819185, "G", "GT"),
-                             vr("2L", 819182, "CT", "C"),
-                             vr("2L", 819160, "T", "G"),
-                             vr("2L", 819294, "T", "A"),
-                             vr("2L", 819225, "A", "G"),
-                             vr("2L", 819167, "C", "T"),
-                             vr("2L", 819203, "CT", "C"),
-                             vr("2L", 819196, "CGA", "C"),
-                             vr("2L", 819154, "T", "G"),
-                             vr("2L", 819279, "T", "G"),
-                             vr("2L", 819290, "G", "A"),
-                             vr("2L", 819145, "C", "G")]
+        self.variants_five = [vr("2L", 819216, "TTCCGTGTCATGC", "T", 819228),
+                             vr("2L", 819185, "G", "GT", 819185),
+                             vr("2L", 819182, "CT", "C", 819183),
+                             vr("2L", 819160, "T", "G", 819160),
+                             vr("2L", 819294, "T", "A", 819294),
+                             vr("2L", 819225, "A", "G", 819225),
+                             vr("2L", 819167, "C", "T", 819167),
+                             vr("2L", 819203, "CT", "C", 819204),
+                             vr("2L", 819196, "CGA", "C", 819198),
+                             vr("2L", 819154, "T", "G", 819154),
+                             vr("2L", 819279, "T", "G", 819279),
+                             vr("2L", 819290, "G", "A", 819290),
+                             vr("2L", 819145, "C", "G", 819145)]
+        
+        feature_table_dtype = [
+                ('seqid','O'),
+                ('source','O'),
+                ('type','O'),
+                ('start','<i8'),
+                ('end','<i8'),
+                ('score','<f8'),
+                ('strand','O'),
+                ('phase','<i8'),
+                ('Parent','O'),
+                ('Name','O'),
+                ('ID','O'),
+                ]
+        
+        feature_table_data = [
+                ('2L', 'DB', 'mRNA', 819113, 819301, -1, '-', -1,
+                 'AGAP004687', '.', 'AGAP004687-RA'),
+                ('2L', 'DB', 'exon', 819113, 819301, -1, '-', -1,
+                 'AGAP004687-RA', '.', 'E013854A'),
+                ('2L', 'DB', 'CDS', 819113, 819301, -1, '-', 0,
+                 'AGAP004687-RA', '.', '.')
+                ]
+            
+        self.feature_table = \
+            allel.FeatureTable(feature_table_data, dtype=feature_table_dtype)
          
     def test_variant_set_one(self):
         
-        self.transcript = veffects.run_workflow(self.gene,
+        self.transcript = veffects.run_workflow(self.gene, self.feature_table,
                                                 self.variants_one)
         
         output_one = "MVHNGIDYGDMQLICEACHLMLSLGMTLKEMVQEFDV*GVLDS" +\
@@ -238,7 +259,7 @@ class TestWorkflowReverseStrand(unittest.TestCase):
         
     def test_variant_set_two(self):
         
-        self.transcript = veffects.run_workflow(self.gene, 
+        self.transcript = veffects.run_workflow(self.gene, self.feature_table,
                                                 self.variants_two)
         
         output_two = "MVHNGIDYGDMQLICEACHPDAGAGHDTEGNGTGVRRVEQGRIG" +\
@@ -248,7 +269,7 @@ class TestWorkflowReverseStrand(unittest.TestCase):
         
     def test_variant_set_three(self):
         
-        self.transcript = veffects.run_workflow(self.gene,
+        self.transcript = veffects.run_workflow(self.gene, self.feature_table,
                                                 self.variants_three)
         
         output_three = "MVHNGIDYGDMQLICEACHLMLALGMTRKEMVQEFDVWNKGVF" +\
@@ -258,7 +279,8 @@ class TestWorkflowReverseStrand(unittest.TestCase):
         
     def test_variant_set_four(self):
         
-        self.transcript = veffects.run_workflow(self.gene, self.variants_four)
+        self.transcript = veffects.run_workflow(self.gene, self.feature_table,
+                                                self.variants_four)
         
         output_four = "MVHKGIDYGDMQLICEACHLMLPLGMTRKEMVQAFGVWNKGVLY" +\
         "SYLIEIPHDFLNQRDVEG*"
@@ -267,7 +289,8 @@ class TestWorkflowReverseStrand(unittest.TestCase):
     
     def test_variant_set_five(self):
         
-        self.transcript = veffects.run_workflow(self.gene, self.variants_five)
+        self.transcript = veffects.run_workflow(self.gene, self.feature_table,
+                                                self.variants_five)
         
         output_five = "MVLNGIDSGDMQLICEACHLMLALEEMVRSDVWKQGVLDSFLL" +\
         "ELPHHFLNQRDVEG*"
@@ -276,12 +299,15 @@ class TestWorkflowReverseStrand(unittest.TestCase):
     
     
     def test_order_does_not_matter(self):
+
+        v1 = vr("2L", 819219, "C", "A", 819219)
+        v2 = vr("2L", 819235, "C", "A", 819235)
         
-        v1 = vr("2L", 298, "GTACACA", "G")
-        v2 = vr("2L", 294, "A", "T")
+        transcript_1 = veffects.run_workflow(self.gene, self.feature_table, 
+                                             [v1, v2])
         
-        transcript_1 = veffects.run_workflow(self.gene, [v1, v2])
-        transcript_2 = veffects.run_workflow(self.gene, [v2, v1])
+        transcript_2 = veffects.run_workflow(self.gene, self.feature_table,
+                                             [v2, v1])
         
         self.assertEqual(transcript_1.seq_changed_translated,
                          transcript_2.seq_changed_translated)
@@ -292,41 +318,77 @@ class TestWorkflowForwardStrand(unittest.TestCase):
         
         self.gene = "AGAP013717-RA"
         
-        self.variants_one = [vr("3R", 758708, "C", "T"),
-                             vr("3R", 758718, "C", "T"),
-                             vr("3R", 758720, "A", "G"),
-                             vr("3R", 758727, "G", "A"),
-                             vr("3R", 758734, "GTG", "G"),
-                             vr("3R", 758743, "AA", "A"),
-                             vr("3R", 758777, "G", "A"),
-                             vr("3R", 758788, "G", "T"),
-                             vr("3R", 758807, "T", "C")]
+        self.variants_one = [vr("3R", 758683, "A", "G", 758683),
+                             vr("3R", 758690, "CC", "C", 758691),
+                             vr("3R", 758693, "A", "C", 758693),
+                             vr("3R", 758697, "GAA", "G", 758699),
+                             vr("3R", 758708, "C", "T", 758708),
+                             vr("3R", 758718, "C", "T", 758718),
+                             vr("3R", 758720, "A", "G", 758720),
+                             vr("3R", 758727, "G", "A", 758727)]
         
-        self.variants_two = [vr("3R", 758681, "G", "C"),
-                             vr("3R", 758697, "G", "A"),
-                             vr("3R", 758711, "A", "T"),
-                             vr("3R", 758742, "G", "C"),
-                             vr("3R", 758750, "G", "T"),
-                             vr("3R", 758755, "C", "G"),
-                             vr("3R", 758777, "G", "A"),
-                             vr("3R", 758793, "C", "G"),
-                             vr("3R", 758805, "GATACTGATCAAAATCTT", "G"),
-                             vr("3R", 758832, "C", "CAA")]
+        self.variants_two = [vr("3R", 758681, "G", "C", 758681),
+                             vr("3R", 758697, "G", "A", 758697),
+                             vr("3R", 758711, "A", "T", 758711),
+                             vr("3R", 758713, "TACAGCAAA", "T", 758721),
+                             vr("3R", 758722, "A", "C", 758722),
+                             vr("3R", 758727, "G", "GTT", 758727)]
         
+        feature_table_dtype = [
+                ('seqid','O'),
+                ('source','O'),
+                ('type','O'),
+                ('start','<i8'),
+                ('end','<i8'),
+                ('score','<f8'),
+                ('strand','O'),
+                ('phase','<i8'),
+                ('Parent','O'),
+                ('Name','O'),
+                ('ID','O'),
+                ]
+        
+        feature_table_data = [
+                ('3R', 'DB', 'mRNA', 758261, 759686, -1, '+', -1,
+                 'AGAP013717', '.', 'AGAP013717-RA'),
+                 
+                ('3R', 'DB', 'five_prime_UTR', 758261, 758676, -1, '+', -1,
+                 'AGAP013717-RA', '.', '.'),
+                 
+                ('3R', 'DB', 'exon', 758261, 758733, -1, '+', -1,
+                 'AGAP013717-RA', 'AGAP013717-RA-E1', '.'),
+                 
+                ('3R', 'DB', 'CDS', 758677, 758733, -1, '+', 0,
+                 'AGAP013717-RA', '.', 'AGAP013717-PA'),
+                 
+                ('3R', 'DB', 'CDS', 759210, 759212, -1, '+', 0,
+                 'AGAP013717-RA', '.', 'AGAP013717-PA'),
+                 
+                ('3R', 'DB', 'exon', 759210, 759686, -1, '+', -1,
+                 'AGAP013717-RA', 'AGAP013717-RA-E2', '.'),
+                 
+                ('3R', 'DB', 'three_prime_UTR', 759213, 759686, -1, '+', -1,
+                 'AGAP013717-RA', '.', '.')
+                ]
+            
+        self.feature_table = \
+            allel.FeatureTable(feature_table_data, dtype=feature_table_dtype)
+
     def test_variant_set_one(self):
         
-        self.transcript = veffects.run_workflow(self.gene, self.variants_one)
+        self.transcript = veffects.run_workflow(self.gene, self.feature_table,
+                                                self.variants_one)
         
-        output_one = "MGNAPNPKQYIKYSRNTAEAGEKCIPVQRGMFQLGT*NLFYLTLIKIFT" +\
-        "ILNNIVNKCL*"
+        output_one = "MGDAPPRQYIKYSRNTAE*"
         
         self.assertEqual(self.transcript.seq_changed_translated, output_one)
 
     def test_variant_set_two(self):
         
-        self.transcript = veffects.run_workflow(self.gene, self.variants_two)
+        self.transcript = veffects.run_workflow(self.gene, self.feature_table,
+                                                self.variants_two)
         
-        output_two = "MANAPNPKQYTMYSKNTAEVRVKKFIAVQRGMFQLGTGKLFYLYHSQNNIVNKCL*"
+        output_two = "MANAPNPKQYTMSHVAE*"
         
         self.assertEqual(self.transcript.seq_changed_translated, output_two)
         

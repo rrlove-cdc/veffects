@@ -9,6 +9,9 @@ Created on Thu May  3 13:36:43 2018
 from Bio import Seq
 import itertools
 
+class VariantCrossesExonBoundaryError(Exception):
+    pass
+
 class Transcript:
 
     def __init__(self, name, seq):
@@ -46,7 +49,8 @@ class Transcript:
 
         assert len(self.seq) == \
         sum([exon.length for exon in self.exons]), \
-        "Length of sequence does not match total length of exons"
+        "Length of sequence does not match total length of exons" +\
+        str(len(self.seq)) + str(sum([exon.length for exon in self.exons]))
 
         for exon in self.exons:
 
@@ -71,6 +75,22 @@ class Transcript:
                 sequence = self.seq[start:]
 
                 exon.add_sequence(sequence)
+    
+    def check_for_overlapping_variants(self, variants):
+        
+        for exon in self.exons:
+            
+            for variant in variants:
+                
+                if variant.pos < exon.start and variant.end >= exon.start:
+                    
+                    raise VariantCrossesExonBoundaryError(self.name,
+                                                          variant.pos)
+                    
+                elif variant.pos <= exon.end and variant.end > exon.end:
+                    
+                    raise VariantCrossesExonBoundaryError(self.name,
+                                                          variant.pos)
 
     def parse_variants_list(self, variants):
 
