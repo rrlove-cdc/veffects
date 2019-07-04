@@ -8,6 +8,9 @@ Created on Thu May  3 13:37:02 2018
 
 from Bio import Seq
 
+class OverlappingVariantError(Exception):
+    pass
+
 class ExonSequence:
     
     def __init__(self, chrom, transcript, exon_number, strand, start, end):
@@ -33,7 +36,8 @@ class ExonSequence:
         
         '''If this is on the reverse strand, take the reverse complement,
         because variants are reported in relation to the forward strand.
-        However, we still want to retain the original sequence as well.'''
+        However, we still want to retain the original sequence as well.
+        '''
         
         self.seq_adjusted = sequence
             
@@ -45,17 +49,11 @@ class ExonSequence:
         
     def change(self):
         
-        ##what to do about overlapping variants?
-        ##if we are assuming these are haplotypes, there shouldn't be any
-        ##make that assumption explicit?
-        ##it seems like a case with overlapping variants would break the
-        ##assumptions behind this code
-        
         mutable_sequence_list = list(self.seq_adjusted)
                 
         for variant in self.variants:
             
-            ##check that chromosome matches and position is reasonable
+            # Does the chromosome match?
             if not variant.chrom == self.chrom:
                 raise ValueError("Variant chrom and exon chrom don't match", 
                                  variant)
@@ -66,29 +64,18 @@ class ExonSequence:
             
             len_alt = len(variant.alt)
             
-            #if variant.pos < self.start and variant.pos + len_
-            
-            if not self.start <= variant.pos <= self.end:
-                raise ValueError("Variant is out of bounds of exon", variant)
-            
             if not variant.ref == self.seq_adjusted[(index):(index + len_ref)]:
                     raise ValueError("Reference alleles don't match at " +\
                                      str(variant.pos))
                     
-            ##first, check for spanning deletions
+            # Check for spanning deletions
             
             affected = mutable_sequence_list[(index):(index + len_ref)]
             
             if '' in affected:
                 
-                print("Warning: position at {pos} is part of a \
-                          spanning deletion. You may be analyzing data \
-                          from multiple haplotypes or have an undetected \
-                          error. Skipping this position.".format(pos =\
-                          variant.pos))
-                    
-                continue
-            
+                raise OverlappingVariantError(variant.pos)
+                        
             if len_ref == len_alt:
                 
                 for alt_index in range(len_alt):
@@ -109,8 +96,7 @@ class ExonSequence:
         
         changed_sequence = ''.join(mutable_sequence_list)
         
-        ##if this is on the reverse strand, we need to change back
-        ##to the original orientation
+        # Change the reverse strand back to the original orientation
         
         if self.strand == "-":
             

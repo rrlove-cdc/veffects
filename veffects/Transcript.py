@@ -6,11 +6,14 @@ Created on Thu May  3 13:36:43 2018
 @author: beccalove
 """
 
-from Bio import Seq
 import itertools
+
+from Bio import Seq
+
 
 class VariantCrossesExonBoundaryError(Exception):
     pass
+
 
 class Transcript:
 
@@ -41,16 +44,20 @@ class Transcript:
             str(Seq.Seq(self.seq_changed).translate())
 
     def populate_exon_seq(self):
+        
+        # Does the transcript length equal the total exon length?
+        
+        if not len(self.exons) > 0:
+            
+            raise ValueError("Must add exons to transcript first")
 
-        ##first, check to make sure that the length of the transcript
-        ##is the same as the collective length of the exons
-
-        assert len(self.exons) > 0, "Must add exons to transcript first"
-
-        assert len(self.seq) == \
-        sum([exon.length for exon in self.exons]), \
-        "Length of sequence does not match total length of exons" +\
-        str(len(self.seq)) + str(sum([exon.length for exon in self.exons]))
+        total_length = sum([exon.length for exon in self.exons])
+        
+        if not len(self.seq) == total_length:
+            
+            raise ValueError(
+                    ("Length of sequence does not match total exon length: "
+                     + str(len(self.seq)) + "," + str(total_length)))
 
         for exon in self.exons:
 

@@ -55,7 +55,7 @@ class TranscriptTestCase(unittest.TestCase):
         self.transcript.add_exon(self.exons[0])
         self.transcript.add_exon(self.exons[1])
         
-        self.assertRaises(AssertionError, self.transcript.populate_exon_seq)
+        self.assertRaises(ValueError, self.transcript.populate_exon_seq)
                 
     def test_populate_exon_seq_correct_seqs(self):
         
@@ -80,7 +80,7 @@ class TranscriptTestCase(unittest.TestCase):
         
     def test_populate_exon_has_exons(self):
         
-        self.assertRaises(AssertionError, self.transcript.populate_exon_seq)
+        self.assertRaises(ValueError, self.transcript.populate_exon_seq)
         
     def test_catches_overlapping_variants(self):
         ##pass a set of variants that overlaps an exon boundary

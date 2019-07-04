@@ -7,13 +7,15 @@ Created on Thu May  3 13:37:17 2018
 """
 
 from collections import namedtuple
-from .Transcript import Transcript
-from .ExonSequence import ExonSequence
 import re
 import requests
 
+from .Transcript import Transcript
+from .ExonSequence import ExonSequence
+
 VariantRecord = namedtuple(
     'VariantRecord',['chrom', 'pos', 'ref', 'alt', 'end'])
+
 
 class BadNameError(Exception):
     pass
@@ -22,6 +24,9 @@ class NumExonsAndCDSDifferError(Exception):
     pass
 
 class RequestReturnError(Exception):
+    pass
+
+class TimeOutError(Exception):
     pass
 
 def validate_transcript_name(name):
@@ -34,7 +39,9 @@ def validate_transcript_name(name):
 def make_POST_request(gene, 
                       post_server = "https://www.vectorbase.org/rest", 
                       post_ext = "/sequence/id/",
-                     feature = "cds"):
+                     feature = "cds",
+                     timeout = (0.1, None),
+                     session = None):
     
     validate_transcript_name(gene)
     
@@ -46,8 +53,31 @@ def make_POST_request(gene,
     feature_seq_payload = '{"ids" : ["' + gene + '"],\
     "type" : "' + feature + '"}'
     
-    feature_seq = requests.post(post_string, 
-                                data = feature_seq_payload, headers = headers)
+    if session:
+        
+        try:
+        
+            feature_seq = session.post(post_string,
+                                       data = feature_seq_payload,
+                                       headers = headers,
+                                       timeout = timeout)
+            
+        except requests.exceptions.Timeout:
+            
+            raise TimeOutError()
+        
+    else:
+        
+        try:
+    
+            feature_seq = requests.post(post_string,
+                                        data = feature_seq_payload,
+                                        headers = headers,
+                                        timeout = timeout)
+            
+        except requests.exceptions.Timeout:
+            
+            raise TimeOutError
     
     if not feature_seq.status_code == requests.codes.ok:
         
@@ -102,7 +132,7 @@ def make_exons(gff3, gene):
 
             cds_list.append(item)
                 
-    if cds_list[0]["strand"] == -1:
+    if cds_list[0]["strand"] == "-":
         
         cds_list.sort(key = lambda x: x["start"], reverse=True)
         
@@ -125,7 +155,7 @@ def make_exons(gff3, gene):
 
 def check_exon_order(exon_list):
     
-    if exon_list[0].strand == -1:
+    if exon_list[0].strand == "-":
         
         exon_list.reverse()
         
@@ -137,9 +167,9 @@ def check_exon_order(exon_list):
             
             raise ValueError("exons out of order")
 
-def run_workflow(gene_name, gff3, variants):
+def run_workflow(gene_name, gff3, variants, **kwargs):
     
-    transcript = make_transcript(make_POST_request(gene = gene_name))
+    transcript = make_transcript(make_POST_request(gene = gene_name, **kwargs))
     
     for exon in make_exons(gff3, gene_name):
         transcript.add_exon(exon)

@@ -82,8 +82,8 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         
         self.exon.add_sequence(self.test_seq)
         
-        variant1 = veffects.VariantRecord("2L", 118, "TA", "AA", 118)
-        variant2 = veffects.VariantRecord("2L", 127, "ATA", "CTA", 127)
+        variant1 = veffects.VariantRecord("2L", 118, "TA", "AA", 119)
+        variant2 = veffects.VariantRecord("2L", 127, "ATA", "CTA", 129)
         
         variants = [variant1, variant2]
         
@@ -94,6 +94,19 @@ class ExonSequenceForwardTestCase(unittest.TestCase):
         test_changed_seq = "CGATATGAAAATGACCAGCTATGAGT"
         
         self.assertEqual(self.exon.changed_sequence, test_changed_seq)
+        
+    def test_overlapping_variant_error(self):
+        
+        self.exon.add_sequence(self.test_seq)
+        
+        variant1 = veffects.VariantRecord("2L", 117, "AT", "A", 118)
+        variant2 = veffects.VariantRecord("2L", 115, "GAATA", "G", 119)
+        
+        variants = [variant1, variant2]
+        
+        self.exon.variants = variants
+        
+        self.assertRaises(veffects.OverlappingVariantError, self.exon.change)
 
 '''        
 class ExonSequenceReverseTestCase(unittest.TestCase):
