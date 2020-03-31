@@ -9,6 +9,7 @@ Created on Thu May  3 13:37:17 2018
 from collections import namedtuple
 import re
 import requests
+import time
 
 from .Transcript import Transcript
 from .ExonSequence import ExonSequence
@@ -24,6 +25,9 @@ class NumExonsAndCDSDifferError(Exception):
     pass
 
 class RequestReturnError(Exception):
+    pass
+
+class ConnectionRefusedError(Exception):
     pass
 
 class TimeOutError(Exception):
@@ -65,6 +69,12 @@ def make_POST_request(gene,
         except requests.exceptions.Timeout:
             
             raise TimeOutError()
+            
+        except requests.exceptions.ConnectionError:
+            
+            time.sleep(5)
+            
+            raise ConnectionRefusedError()
         
     else:
         
@@ -77,7 +87,13 @@ def make_POST_request(gene,
             
         except requests.exceptions.Timeout:
             
-            raise TimeOutError
+            raise TimeOutError()
+            
+        except requests.exceptions.ConnectionError:
+            
+            time.sleep(5)
+            
+            raise ConnectionRefusedError()
     
     if not feature_seq.status_code == requests.codes.ok:
         
