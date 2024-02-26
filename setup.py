@@ -12,7 +12,7 @@ setup(name='veffects',
      install_requires=[
          "scikit-allel",
          "requests",
-         "Bio"
+         "biopython"
      ],
      zip_safe=False
      )
