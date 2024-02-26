@@ -9,5 +9,10 @@ setup(name='veffects',
      author_email='rachelrebeccalove@gmail.com',
      license='GNU General Public License v3.0',
      packages=['veffects'],
+     install_requires=[
+         "scikit-allel",
+         "requests",
+         "Bio"
+     ],
      zip_safe=False
      )
